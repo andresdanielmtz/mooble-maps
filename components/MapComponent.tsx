@@ -1,15 +1,17 @@
 import MapView from 'react-native-maps';
 import { StyleSheet, View } from 'react-native';
 
-export default function MapComponent() {
-    return (
-        <View style={styles.container}>
-            <MapView style={styles.map} />
-        </View>
-    );
-
+interface Props {
+    showTraffic: boolean;
 }
 
+export default function MapComponent({ showTraffic }: Props) {
+    return (
+        <View style={styles.container}>
+            <MapView style={styles.map} showsTraffic={showTraffic} />
+        </View>
+    );
+}
 const styles = StyleSheet.create({
     container: {
         flex: 1,
