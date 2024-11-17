@@ -9,7 +9,6 @@ export default function GetStarted() {
         Get Started
       </ThemedText>
 
-
     </ThemedView>
   )
 
