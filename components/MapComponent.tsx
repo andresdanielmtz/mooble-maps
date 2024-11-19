@@ -1,23 +1,3 @@
-<<<<<<< Updated upstream
-import MapView from 'react-native-maps';
-import { StyleSheet, View } from 'react-native';
-import { ThemedView } from './ThemedView';
-
-interface Props {
-    showTraffic: boolean;
-}
-
-export default function MapComponent({ showTraffic }: Props) {
-    return (
-        <ThemedView style={styles.container}>
-            <MapView style={styles.map} showsTraffic={showTraffic} zoomEnabled={true} region={{
-                latitude: 20.6690547,
-                longitude: -103.3836232,
-                latitudeDelta: 0.05,
-                longitudeDelta: 0.05
-            }} />
-        </ThemedView>
-=======
 import React, { useState, useEffect } from 'react';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import { StyleSheet, Alert } from 'react-native';
@@ -39,7 +19,6 @@ interface Restaurant {
 }
 
 
-// Replace with your Google Places API key
 const GOOGLE_API_KEY = 'AIzaSyALarGzaHSHACPwUXtOLpHwqkSfKOlobvQ';
 
 export default function MapComponent({ showTraffic }: Props) {
@@ -59,7 +38,6 @@ export default function MapComponent({ showTraffic }: Props) {
                 let currentLocation = await Location.getCurrentPositionAsync({});
                 setLocation(currentLocation);
 
-                // Get nearby restaurants once we have location
                 if (currentLocation) {
                     getNearbyRestaurants(currentLocation.coords);
                 }
@@ -139,7 +117,6 @@ export default function MapComponent({ showTraffic }: Props) {
             </MapView>
         </ThemedView>
 
->>>>>>> Stashed changes
     );
 }
 const styles = StyleSheet.create({
