@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
-import { StyleSheet, Alert } from 'react-native';
+import { StyleSheet, Alert, ActivityIndicator, View, Text } from 'react-native';
 import { ThemedView } from './ThemedView';
 import * as Location from 'expo-location';
 
 interface Props {
     showTraffic: boolean;
+    showLocations?: boolean;
 }
 
 interface Restaurant {
@@ -18,20 +19,21 @@ interface Restaurant {
     };
 }
 
-
 const GOOGLE_API_KEY = 'AIzaSyALarGzaHSHACPwUXtOLpHwqkSfKOlobvQ';
 
-export default function MapComponent({ showTraffic }: Props) {
+export default function MapComponent({ showTraffic, showLocations }: Props) {
     const [location, setLocation] = useState<Location.LocationObject | null>(null);
     const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
     const [mapReady, setMapReady] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         (async () => {
             try {
                 let { status } = await Location.requestForegroundPermissionsAsync();
                 if (status !== 'granted') {
-                    Alert.alert('Error', 'Permiso de localización negado');
+                    Alert.alert('Error', 'Permiso de localización denegado.');
+                    setLoading(false);
                     return;
                 }
 
@@ -39,11 +41,13 @@ export default function MapComponent({ showTraffic }: Props) {
                 setLocation(currentLocation);
 
                 if (currentLocation) {
-                    getNearbyRestaurants(currentLocation.coords);
+                    await getNearbyRestaurants(currentLocation.coords);
                 }
             } catch (error) {
-                console.error('Location error:', error);
-                Alert.alert('Error', 'No se pudo obtener la ubicación');
+                console.error('Error al obtener ubicación:', error);
+                Alert.alert('Error', 'No se pudo obtener la ubicación.');
+            } finally {
+                setLoading(false);
             }
         })();
     }, []);
@@ -51,7 +55,6 @@ export default function MapComponent({ showTraffic }: Props) {
     const getNearbyRestaurants = async (coords: { latitude: number; longitude: number }) => {
         try {
             const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${coords.latitude},${coords.longitude}&radius=1000&type=restaurant&key=${GOOGLE_API_KEY}`;
-
             const response = await fetch(url);
             const data = await response.json();
 
@@ -63,14 +66,16 @@ export default function MapComponent({ showTraffic }: Props) {
                     location: {
                         latitude: place.geometry.location.lat,
                         longitude: place.geometry.location.lng,
-                    }
+                    },
                 }));
-
                 setRestaurants(places);
+            } else {
+                console.error('Google Places API Error:', data.status, data.error_message);
+                Alert.alert('Error', 'No se pudieron cargar restaurantes cercanos.');
             }
         } catch (error) {
-            console.error('Places API error:', error);
-            Alert.alert('Error', 'No se pudieron obtener los restaurantes cercanos');
+            console.error('Error al obtener lugares:', error);
+            Alert.alert('Error', 'No se pudieron cargar restaurantes cercanos.');
         }
     };
 
@@ -78,12 +83,19 @@ export default function MapComponent({ showTraffic }: Props) {
         setMapReady(true);
     };
 
+    if (loading) {
+        return (
+            <View style={[styles.container, styles.centered]}>
+                <ActivityIndicator size="large" color="#0000ff" />
+                <Text>Cargando ubicación...</Text>
+            </View>
+        );
+    }
+
     if (!location) {
         return (
-            <ThemedView style={styles.container}>
-                {/* You could add a loading indicator here */}
-
-                It is loading...
+            <ThemedView style={[styles.container, styles.centered]}>
+                <Text>No se pudo obtener la ubicación.</Text>
             </ThemedView>
         );
     }
@@ -100,25 +112,26 @@ export default function MapComponent({ showTraffic }: Props) {
                     latitude: location.coords.latitude,
                     longitude: location.coords.longitude,
                     latitudeDelta: 0.02,
-                    longitudeDelta: 0.02
+                    longitudeDelta: 0.02,
                 }}
                 showsUserLocation
                 showsMyLocationButton
             >
-                {mapReady && restaurants.map((restaurant) => (
-                    <Marker
-                        key={restaurant.id}
-                        coordinate={restaurant.location}
-                        title={restaurant.name}
-                        description={restaurant.address}
-                        pinColor="red"
-                    />
-                ))}
+                {mapReady && showLocations && 
+                    restaurants.map((restaurant) => (
+                        <Marker
+                            key={restaurant.id}
+                            coordinate={restaurant.location}
+                            title={restaurant.name}
+                            description={restaurant.address}
+                            pinColor="red"
+                        />
+                    ))}
             </MapView>
         </ThemedView>
-
     );
 }
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -127,5 +140,9 @@ const styles = StyleSheet.create({
     map: {
         width: '100%',
         height: '100%',
+    },
+    centered: {
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });
