@@ -22,24 +22,22 @@ export default function HomeScreen() {
           style={styles.button}
           compact={true}
           uppercase={false}
-        >
-        </Button>
+        />
+
 
         <ThemedView style={styles.locationButton}>
           <Button
             id='location-button'
             mode="contained"
             onPress={() => setShowLocations(!showLocations)}
-            icon={showLocations ? "eye-off" : "eye"}
+            icon={showLocations ? "google-maps" : "google-maps"}
             contentStyle={styles.buttonContent}
             labelStyle={styles.buttonLabel}
             style={styles.button}
             compact={true}
             uppercase={false}
+          />
 
-          >
-            {showLocations ? 'Hide nearby restaurants' : 'Show nearby restaurants'}
-          </Button>
         </ThemedView>
 
 
@@ -73,8 +71,10 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   buttonContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 8,
     paddingVertical: 8,
+    justifyContent: "center",
+    alignContent: "center"
   },
   buttonLabel: {
     fontSize: 14,
