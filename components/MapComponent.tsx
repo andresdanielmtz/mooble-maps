@@ -26,31 +26,38 @@ export default function MapComponent({ showTraffic, showLocations }: Props) {
     const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
     const [mapReady, setMapReady] = useState(false);
     const [loading, setLoading] = useState(true);
-
     useEffect(() => {
-        (async () => {
+        const fetchLocation = async () => {
             try {
                 let { status } = await Location.requestForegroundPermissionsAsync();
+                console.log('Location Permission Status:', status);
+                
                 if (status !== 'granted') {
-                    Alert.alert('Error', 'Permiso de localización denegado.');
+                    Alert.alert(
+                        'Location Permission', 
+                        'Please go to app settings and grant location permissions manually.'
+                    );
                     setLoading(false);
                     return;
                 }
-
+    
                 let currentLocation = await Location.getCurrentPositionAsync({});
                 setLocation(currentLocation);
-
+    
                 if (currentLocation) {
                     await getNearbyRestaurants(currentLocation.coords);
                 }
+                
+                setLoading(false);
             } catch (error) {
-                console.error('Error al obtener ubicación:', error);
+                console.error('Error fetching location:', error);
                 Alert.alert('Error', 'No se pudo obtener la ubicación.');
-            } finally {
                 setLoading(false);
             }
-        })();
-    }, []);
+        };
+    
+        fetchLocation();
+    }, []); // Empty dependency array means this runs once on component mount
 
     const getNearbyRestaurants = async (coords: { latitude: number; longitude: number }) => {
         try {
@@ -117,7 +124,7 @@ export default function MapComponent({ showTraffic, showLocations }: Props) {
                 showsUserLocation
                 showsMyLocationButton
             >
-                {mapReady && showLocations && 
+                {mapReady && showLocations &&
                     restaurants.map((restaurant) => (
                         <Marker
                             key={restaurant.id}
