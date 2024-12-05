@@ -19,7 +19,7 @@ interface Restaurant {
     };
 }
 
-const GOOGLE_API_KEY = 'AIzaSyALarGzaHSHACPwUXtOLpHwqkSfKOlobvQ';
+const GOOGLE_API_KEY = '';
 
 export default function MapComponent({ showTraffic, showLocations }: Props) {
     const [location, setLocation] = useState<Location.LocationObject | null>(null);
